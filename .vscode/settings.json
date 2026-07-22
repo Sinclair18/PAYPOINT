@@ -5,6 +5,7 @@
         "espressif",
         "INITR",
         "LEDMANAGER",
-        "marcoschwartz"
+        "marcoschwartz",
+        "WROOM"
     ]
 }

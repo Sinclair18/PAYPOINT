@@ -1,9 +1,18 @@
+/* adding this header guard to avoid multiple includes of BiometricAuth.h file by other header files or
+cpp files*/
+
 #ifndef BIOMETRICAUTH_H
 #define BIOMETRICAUTH_H
 
 #include <Arduino.h>
+
+/* adding the adafruit fingerprint library to access the usable functions in the library for
+scanning user fingerprint*/
 #include <Adafruit_Fingerprint.h>
 
+
+/* the class created to initialize the fingerprint module and put the authentication functions
+to so I don't flood the main.cpp with them*/
 class BiometricAuth
 {
 private:
