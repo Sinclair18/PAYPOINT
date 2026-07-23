@@ -128,40 +128,41 @@ void loop()
     be entered, the money gets transferred and the system goes back to idle*/
     else if (currentState == AWAITING_PASSWORD)
     {
-      if (pressedValue == '#' && display.getEnteredPassword().length() >= MIN_PASSWORD_LENGTH)
+      if (pressedValue == '#')
       {
-
-        // leds.setProcessing();
-
-        if (display.getEnteredPassword() == MASTER_PASSWORD)
+        // 1. First, check if the password is long enough to even bother verifying
+        if (display.getEnteredPassword().length() < MIN_PASSWORD_LENGTH)
         {
-
+          leds.setError();
+          display.showErrorMessage();
+          delay(500);
+          leds.setTyping();
+          currentState = AWAITING_PASSWORD;
+        }
+        // 2. If it is long enough, do the actual master password check
+        else if (display.getEnteredPassword() == MASTER_PASSWORD)
+        {
           leds.setProcessing();
           delay(1000);
-
           display.processTransaction();
           leds.setIdle();
           currentState = IDLE_MENU;
         }
-
-        /* but if the password is wrong, the system logs an error and gives another chance to re-input
-        the password (I would later add a maximum amount of trials before the system gets locked)*/
-
+        // 3. If it's long enough but just wrong
         else
         {
           leds.setError();
-
           display.showErrorMessage();
           delay(500);
           leds.setTyping();
           currentState = AWAITING_PASSWORD;
         }
       }
+      // If it wasn't the # key, just type the character
       else
       {
         display.printKey(pressedValue, true);
       }
-    }
   }
 
   /* back to that timer that was set to watch out for 10 seconds of inactivity, the system resets
@@ -173,4 +174,5 @@ void loop()
     display.resetInput();
   }
   delay(10); // tiny delay for smoothing the esp32
+}
 }

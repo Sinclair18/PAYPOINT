@@ -20,8 +20,12 @@ private:
     Adafruit_Fingerprint finger = Adafruit_Fingerprint(&Serial2);
 
 public:
-    inline void init()
-    {
+    void init();
+};
+
+
+inline void BiometricAuth::init() 
+{
         // booting up the serial2 pins and the baudrate to 57600 bits per second
         Serial2.begin(57600, SERIAL_8N1, 16, 17);
 
@@ -37,7 +41,6 @@ public:
         {
             Serial.println("ERROR: Could not find fingerprint sensor. Check wiring!");
         }
-    }
-};
+}
 
 #endif

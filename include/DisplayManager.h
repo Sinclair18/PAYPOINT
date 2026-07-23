@@ -1,8 +1,11 @@
+// adding the header guard
 #ifndef DISPLAYMANAGER_H
 #define DISPLAYMANAGER_H
 
+// included the necessary header files 
 #include "../include/Config.h"
 #include <LiquidCrystal_I2C.h>
+
 #include <Arduino.h>
 #include <SPI.h>
 
@@ -15,6 +18,8 @@ private:
     String enteredPassword = "";
 
 public:
+
+// all functions to effectively handle the full FSM
     void init();
     void displayMenu();
     void printKey(char key, bool isPasswordMode);
