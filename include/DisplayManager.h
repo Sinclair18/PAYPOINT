@@ -29,6 +29,9 @@ public:
     void showPasswordPrompt();
     String getEnteredPassword();
     void showErrorMessage();
+    void showBiometricPrompt();
+    String getEnteredAmount();
+    void showAdminMenu();
 };
 
 inline void DisplayManager::init()
@@ -159,5 +162,26 @@ inline void DisplayManager::showErrorMessage()
 
     // Redraw the default PayPoint menu
     showPasswordPrompt();
+}
+
+inline void DisplayManager::showBiometricPrompt()
+{
+    lcd.clear();
+    lcd.setCursor(1, 0);
+    lcd.print("Place Finger");
+    lcd.setCursor(2, 1);
+    lcd.print("On Scanner...");
+}
+
+inline String DisplayManager::getEnteredAmount() {
+    return enteredAmount;
+}
+
+inline void DisplayManager::showAdminMenu() {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("1 -> ENROLL NEW ID");
+    lcd.setCursor(0, 1);
+    lcd.print("2 -> DELETE ID");
 }
 #endif
