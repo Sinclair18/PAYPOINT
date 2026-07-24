@@ -65,7 +65,7 @@ void loop()
 
       {
         
-        if (display.getEnteredAmount() == "0000") {
+        if (display.getEnteredAmount() == ADMIN_PASSWORD) {
 
           currentState = ADMIN_MODE;
           display.showAdminMenu();
@@ -175,6 +175,47 @@ void loop()
       leds.setIdle();
       currentState = IDLE_MENU;
       display.resetInput();
+    }
+  }
+
+  else if (currentState == ADMIN_MODE)
+  {
+    if (pressedValue == '*')
+    {
+      // escape out to the main menu
+      currentState = IDLE_MENU;
+      leds.setIdle();
+      display.resetInput();
+    }
+
+    else if (pressedValue == '1')
+    {
+      leds.setProcessing();
+      delay(500);
+      leds.setIdle();
+      // the "Start Enrollment" process then starts
+      display.showEnrollIDPrompt();
+      currentState = AWAITING_ENROLL_ID;
+    }
+
+    else if (pressedValue == '2'){
+      // the "delete ID" process starts here
+    }
+  }
+
+
+  else if (currentState = AWAITING_ENROLL_ID) {
+    if (pressedValue == '*') {
+      display.showAdminMenu();
+      currentState = ADMIN_MODE;
+    }
+
+    else if (pressedValue >= 1 || pressedValue <= 9) {
+      display.printKey(pressedValue, false);
+    }
+
+    else if (pressedValue == '#') {
+
     }
   }
 

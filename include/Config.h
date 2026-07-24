@@ -21,7 +21,7 @@ module is connected to the serial2 tx pin of esp32 dev module (pin 17) and the t
 to the serial2 rx pin of the esp32 dev module*/
 #define AS608_RX 17
 #define AS608_TX 16
-#define ADMIN_PASSWORD "*909"
+#define ADMIN_PASSWORD "0000"
 
 
 
@@ -57,12 +57,21 @@ const char keys[KEYPAD_ROWS][KEYPAD_COLS] = {{'1', '2', '3', 'A'},
 enum SystemStates
 {
     IDLE_MENU,
+
     AWAITING_AMOUNT,
+
     AUTH_SELECTION,
+
+    
     AWAITING_PASSWORD,
+
     AWAITING_BIOMETRIC,
+
     PROCESSING,
-    ADMIN_MODE
+
+    ADMIN_MODE,
+
+    AWAITING_ENROLL_ID
 };
 
 #endif

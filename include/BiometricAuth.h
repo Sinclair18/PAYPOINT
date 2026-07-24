@@ -21,6 +21,7 @@ private:
 
 public:
     void init();
+    bool enrollFingerprint(uint8_t userID);
     bool scanForMatch();
 };
 
@@ -61,6 +62,55 @@ inline bool BiometricAuth::scanForMatch() {
     }
 
     p = finger.fingerSearch();
+
+    if (p == FINGERPRINT_OK){
+        return true;
+    }
+
+    return false;
+}
+
+inline bool BiometricAuth::enrollFingerprint(uint8_t userID) {
+    int p = -1;
+
+    while (p != FINGERPRINT_OK) {
+        finger.getImage();
+    }
+
+    p = finger.image2Tz(1);
+
+    if (p != FINGERPRINT_OK) {
+        return false;
+    }
+
+    // 3. Waiting for the user to remove their finger
+    p = 0;
+    while (p != FINGERPRINT_NOFINGER)
+    {
+        p = finger.getImage();
+    }
+
+    // 4. Waiting for them to place the same finger again
+    p = -1;
+    while (p != FINGERPRINT_OK)
+    {
+        p = finger.getImage();
+    }
+
+    // 5. converting the second image to a mathematical map (Buffer 2)
+    p = finger.image2Tz(2);
+    if (p != FINGERPRINT_OK)
+        return false;
+
+    p = finger.createModel();
+
+    if (p != FINGERPRINT_OK)
+    {
+        return false; // The two scans didn't match (user moved their finger!)
+    }
+
+
+    p = finger.storeModel(userID);
 
     if (p == FINGERPRINT_OK){
         return true;

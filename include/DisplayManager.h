@@ -32,6 +32,7 @@ public:
     void showBiometricPrompt();
     String getEnteredAmount();
     void showAdminMenu();
+    void showEnrollIDPrompt();
 };
 
 inline void DisplayManager::init()
@@ -180,8 +181,19 @@ inline String DisplayManager::getEnteredAmount() {
 inline void DisplayManager::showAdminMenu() {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("1 -> ENROLL NEW ID");
+    lcd.print("1. ENROLL NEW ID");
     lcd.setCursor(0, 1);
-    lcd.print("2 -> DELETE ID");
+    lcd.print("2. DELETE ID");
+}
+
+inline void DisplayManager::showEnrollIDPrompt() {
+    enteredAmount = ""; // clearing out the admin password that was entered to get to this state
+    lcd.clear(); // clearing the lcd totally
+    lcd.setCursor(0, 0);
+    lcd.print("Enter ID (1-127)");
+    lcd.setCursor(0, 1);
+    lcd.print("ID: ");
+
+    cursorPosition = 4; // Set cursor right after "ID: "
 }
 #endif
