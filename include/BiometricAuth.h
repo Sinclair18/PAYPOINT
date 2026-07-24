@@ -21,6 +21,7 @@ private:
 
 public:
     void init();
+    bool scanForMatch();
 };
 
 
@@ -43,4 +44,28 @@ inline void BiometricAuth::init()
         }
 }
 
+inline bool BiometricAuth::scanForMatch() {
+    uint8_t p = finger.getImage();
+
+    if (p == FINGERPRINT_NOFINGER){
+        return false;
+    }
+
+    if (p != FINGERPRINT_OK){
+        return false;
+    }
+
+    p = finger.image2Tz();
+    if (p != FINGERPRINT_OK) {
+        return false;
+    }
+
+    p = finger.fingerSearch();
+
+    if (p == FINGERPRINT_OK){
+        return true;
+    }
+
+    return false;
+}
 #endif
