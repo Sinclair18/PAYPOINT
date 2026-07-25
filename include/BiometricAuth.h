@@ -12,7 +12,6 @@ scanning user fingerprint*/
 
 #include "../include/DisplayManager.h"
 
-
 /* the class created to initialize the fingerprint module and put the authentication functions
 to so I don't flood the main.cpp with them*/
 class BiometricAuth
@@ -23,49 +22,56 @@ private:
 
 public:
     void init();
-    bool enrollFingerprint(uint8_t id, DisplayManager &display);
     bool scanForMatch();
+    bool enrollFingerprint(uint8_t id, DisplayManager &display);
+    bool deleteFingerprint(uint8_t id);
+    bool deleteAllFingerprints();
+    bool isIDTaken(uint8_t id);
 };
 
-
-inline void BiometricAuth::init() 
+inline void BiometricAuth::init()
 {
-        // booting up the serial2 pins and the baudrate to 57600 bits per second
-        Serial2.begin(57600, SERIAL_8N1, 16, 17);
+    // booting up the serial2 pins and the baudrate to 57600 bits per second
+    Serial2.begin(57600, SERIAL_8N1, 16, 17);
 
-        // now telling the sensor library to start listening
-        finger.begin(57600);
+    // now telling the sensor library to start listening
+    finger.begin(57600);
 
-        // confirm that the sensor is alive
-        if (finger.verifyPassword())
-        {
-            Serial.println("AS608 Sensor connected successfully!");
-        }
-        else
-        {
-            Serial.println("ERROR: Could not find fingerprint sensor. Check wiring!");
-        }
+    // confirm that the sensor is alive
+    if (finger.verifyPassword())
+    {
+        Serial.println("AS608 Sensor connected successfully!");
+    }
+    else
+    {
+        Serial.println("ERROR: Could not find fingerprint sensor. Check wiring!");
+    }
 }
 
-inline bool BiometricAuth::scanForMatch() {
+inline bool BiometricAuth::scanForMatch()
+{
     uint8_t p = finger.getImage();
 
-    if (p == FINGERPRINT_NOFINGER){
+    if (p == FINGERPRINT_NOFINGER)
+    {
         return false;
     }
 
-    if (p != FINGERPRINT_OK){
+    if (p != FINGERPRINT_OK)
+    {
         return false;
     }
 
     p = finger.image2Tz();
-    if (p != FINGERPRINT_OK) {
+    if (p != FINGERPRINT_OK)
+    {
         return false;
     }
 
     p = finger.fingerSearch();
 
-    if (p == FINGERPRINT_OK){
+    if (p == FINGERPRINT_OK)
+    {
         return true;
     }
 
@@ -89,6 +95,13 @@ inline bool BiometricAuth::enrollFingerprint(uint8_t id, DisplayManager &display
     p = finger.image2Tz(1);
     if (p != FINGERPRINT_OK)
         return false;
+
+    p = finger.fingerFastSearch();
+
+    if (p == FINGERPRINT_OK) {
+        display.showErrorMessage("Duplicate Detected");
+        return false;
+    }
 
     // --- NEW: Tell the user to lift their finger! ---
     display.showRemoveFinger();
@@ -129,6 +142,51 @@ inline bool BiometricAuth::enrollFingerprint(uint8_t id, DisplayManager &display
     p = finger.storeModel(id);
     if (p == FINGERPRINT_OK)
         return true;
+
+    return false;
+}
+
+inline bool BiometricAuth::deleteFingerprint(uint8_t id)
+{
+    uint8_t p = finger.loadModel(id);
+
+    if (p != FINGERPRINT_OK)
+    {
+        return false; // it doesn't exist
+    }
+
+    p = finger.deleteModel(id);
+
+    if (p == FINGERPRINT_OK)
+
+    {
+        return true;
+    }
+
+    return false; // Failed to delete (or ID didn't exist)
+}
+
+inline bool BiometricAuth::deleteAllFingerprints()
+{
+    uint8_t p = finger.emptyDatabase();
+    Serial.print("Database Clear Code: ");
+    Serial.println(p);
+
+    if (p == FINGERPRINT_OK)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+inline bool BiometricAuth::isIDTaken(uint8_t id)
+{
+    uint8_t p = finger.loadModel(id);
+    if (p == FINGERPRINT_OK)
+    {
+        return true;
+    }
 
     return false;
 }

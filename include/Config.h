@@ -12,10 +12,12 @@ cpp files*/
 // included to get access to arduino specific code implementation
 #include <Arduino.h>
 
-/* since I'd be using i2c lcd library, I just hard coded the lcd address, change or ignore the value if you
- choose to use another lcd type */
-#define LCD_ADDRESS 0X3C
-#define 
+/* defining the parameters that I'd need to control the 1.3 inch OLED display, I'm particularly using the
+SH110X library for this oled */
+#define OLED_ADDRESS 0X3C
+#define OLED_HEIGHT 64
+#define OLED_WIDTH 128
+#define OLED_RESET -1
 
 /* the AS608 fingerprint module is specifically what I used for this project, the RX Pin of the
 module is connected to the serial2 tx pin of esp32 dev module (pin 17) and the tx pin of the module connects
@@ -72,7 +74,11 @@ enum SystemStates
 
     ADMIN_MODE,
 
-    AWAITING_ENROLL_ID
+    AWAITING_ENROLL_ID,
+
+    AWAITING_DELETE_ID,
+    
+    AWAITING_DELETE_ALL_ID
 };
 
 #endif

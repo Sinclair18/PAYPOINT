@@ -141,7 +141,7 @@ void loop()
         if (display.getEnteredPassword().length() < MIN_PASSWORD_LENGTH)
         {
           leds.setError();
-          display.showErrorMessage();
+          display.showErrorMessage("Wrong Password");
           delay(500);
           leds.setTyping();
           currentState = AWAITING_PASSWORD;
@@ -159,7 +159,7 @@ void loop()
         else
         {
           leds.setError();
-          display.showErrorMessage();
+          display.showErrorMessage("Wrong Password");
           delay(500);
           leds.setTyping();
           currentState = AWAITING_PASSWORD;
@@ -204,6 +204,23 @@ void loop()
       else if (pressedValue == '2')
       {
         // the "delete ID" process starts here
+        leds.setProcessing();
+        delay(500);
+        leds.setIdle();
+
+        display.showDeleteIDPrompt();
+        currentState = AWAITING_DELETE_ID;
+      }
+
+      else if (pressedValue == '3')
+      {
+        // the "delete All ID" process starts here
+        leds.setProcessing();
+        delay(500);
+        leds.setIdle();
+
+        display.showDeleteAllIDPrompt();
+        currentState = AWAITING_DELETE_ALL_ID;
       }
     }
 
@@ -226,25 +243,38 @@ void loop()
 
         if (enrollID >= 0 && enrollID <= 127)
         {
-          display.showBiometricPrompt();
-
-          if (scanner.enrollFingerprint(enrollID, display) == true)
+          //  Check if the slot is already taken
+          if (scanner.isIDTaken(enrollID) == true)
           {
-            leds.setProcessing();
-            delay(700);
+            leds.setError();
+            display.showErrorMessage("ID Already Taken");
+            delay(1500);
             leds.setIdle();
+
+            // Kick them back to the admin menu
             display.showAdminMenu();
             currentState = ADMIN_MODE;
           }
-
           else
           {
-            // Failure! (Scans didn't match, or sensor error)
-            leds.setError();
-            display.showErrorMessage();
+            // The slot is free! Proceed with the scanning process
+            display.showPlaceFinger();
 
-            // Show error for a moment, then return to Admin Menu
-            delay(700);
+            if (scanner.enrollFingerprint(enrollID, display) == true)
+            {
+              leds.setProcessing();
+              display.showSuccessMessage("Enroll Success!");
+              delay(1500);
+              leds.setIdle();
+            }
+            else
+            {
+              leds.setError();
+              display.showErrorMessage("ID in Use");
+              delay(1500);
+              leds.setIdle();
+            }
+
             display.showAdminMenu();
             currentState = ADMIN_MODE;
           }
@@ -252,25 +282,121 @@ void loop()
       }
     }
 
+    else if (currentState == AWAITING_DELETE_ID)
+    {
+
+      if (pressedValue == '*')
+      {
+        display.showAdminMenu();
+        currentState = ADMIN_MODE;
+      }
+
+      else if (pressedValue >= '0' && pressedValue <= '9')
+      {
+        display.printKey(pressedValue, false);
+      }
+
+      else if (pressedValue == '#')
+
+      {
+        int IDToDelete = display.getEnteredAmount().toInt();
+
+        if (IDToDelete >= 0 && IDToDelete <= 127)
+        {
+
+          if (scanner.deleteFingerprint(IDToDelete) == true)
+
+          {
+
+            display.showSuccessMessage("ID has been removed.");
+
+            leds.setProcessing();
+            delay(1500);
+
+            leds.setIdle();
+          }
+
+          else
+          {
+            leds.setError();
+
+            display.showErrorMessage("ID does not exist.");
+            delay(1500);
+            leds.setIdle();
+          }
+
+          display.showAdminMenu();
+          currentState = ADMIN_MODE;
+        }
+      }
+    }
+
+    else if (currentState == AWAITING_DELETE_ALL_ID)
+    {
+
+      if (pressedValue == '1')
+      {
+
+        if (scanner.deleteAllFingerprints() == true)
+        {
+
+          leds.setProcessing();
+          display.showSuccessMessage("All ID Cleared.");
+
+          delay(1000);
+
+          leds.setIdle();
+        }
+
+        else
+        {
+          leds.setError();
+          display.showErrorMessage("NO ID TO CLEAR.");
+
+          delay(1000);
+
+          leds.setIdle();
+        }
+        display.showAdminMenu();
+        currentState = ADMIN_MODE;
+      }
+
+      else if (pressedValue == '2')
+      {
+        display.showAdminMenu();
+        currentState = ADMIN_MODE;
+      }
+    }
+
     /* back to that timer that was set to watch out for 10 seconds of inactivity, the system resets
     to idle if the condition is met*/
+
     if (currentState != IDLE_MENU && millis() - lastInteractionTime >= 10000)
     {
+
       currentState = IDLE_MENU;
+
       leds.setIdle();
       display.resetInput();
     }
+
     delay(10); // tiny delay for smoothing the esp32
   }
 
   if (currentState == AWAITING_BIOMETRIC)
   {
+
     if (scanner.scanForMatch() == true)
+
     {
+
       leds.setProcessing();
+
       delay(600);
+
       display.processTransaction();
       leds.setIdle();
+
       currentState = IDLE_MENU;
       lastInteractionTime = millis();
     }

@@ -4,9 +4,9 @@
 
 // included the necessary header files
 #include "../include/Config.h"
+
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
-#include <LiquidCrystal_I2C.h>
 
 #include <Arduino.h>
 #include <SPI.h>
@@ -14,168 +14,181 @@
 class DisplayManager
 {
 private:
-    LiquidCrystal_I2C lcd = LiquidCrystal_I2C(LCD_ADDRESS, 16, 2);
-    int cursorPosition = 7;
-    String enteredAmount = "";
-    String enteredPassword = "";
+    Adafruit_SH1106G oled{OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET};
+    uint8_t inputX = 0, inputY = 0;
+    String enteredAmount = "", enteredPassword = "";
 
 public:
     // all functions to effectively handle the full FSM
     void init();
     void displayMenu();
     void printKey(char key, bool isPasswordMode);
-    void resetInput();
-    void processTransaction();
-    void showAuthMenu();
-    void showPasswordPrompt();
-    String getEnteredPassword();
-    void showErrorMessage();
-    void showBiometricPrompt();
-    String getEnteredAmount();
     void showAdminMenu();
-    void showEnrollIDPrompt();
+    void showAuthMenu();
+    void showBiometricPrompt();
+    void showPasswordPrompt();
+    String getEnteredAmount();
+    String getEnteredPassword();
+    void processTransaction();
+    void showErrorMessage(String errorMessage);
+    void showSuccessMessage(String successMessage);
+    void showPlaceFinger();
     void showRemoveFinger();
     void showPlaceAgain();
+    void showEnrollIDPrompt();
+    void showDeleteIDPrompt();
+    void showDeleteAllIDPrompt();
+    void resetInput();
 };
 
 inline void DisplayManager::init()
 {
-    lcd.init();
-    lcd.backlight();
-    lcd.clear();
+    oled.begin(OLED_ADDRESS, true);
+
+    oled.clearDisplay();
+
+    oled.setTextSize(1);
+    oled.setTextColor(SH110X_WHITE, SH110X_BLACK);
+
+    oled.display();
 }
 
 inline void DisplayManager::displayMenu()
 {
+    oled.clearDisplay();
+    
     enteredAmount = "";
-    cursorPosition = 7;
-    lcd.clear();
+    
+    oled.setTextSize(2);
 
-    lcd.setCursor(4, 0);
-    lcd.print("PAYPOINT");
+    oled.setCursor(15, 0);
+    oled.print("PAYPOINT");
 
-    lcd.setCursor(0, 1);
-    lcd.print("Amt: $");
+    // oled.setTextSize(1);
+    oled.setCursor(5, 20);
+    oled.print("Enter Amt:");
+
+    oled.setCursor(15, 40);
+    oled.print('$');
+
+    inputX = 26; // Start typing after "Amt: $"
+    inputY = 40; // Stay on the same row
+    oled.display();
 }
 
 // adding the default parameter here!
 inline void DisplayManager::printKey(char key, bool isPasswordMode = false)
 {
-    // first the backspace logic
+    // 1. String Math (Same as before)
     if (key == '*')
+
     {
-        // now if we are in password mode, we just delete from the password string
         if (isPasswordMode && enteredPassword.length() > 0)
-        {
+
             enteredPassword.remove(enteredPassword.length() - 1);
-            cursorPosition -= 1;
-            lcd.setCursor(cursorPosition, 1);
-            lcd.print(" ");
-        }
-        // but if are in normal mode, delete from the amount string
+
         else if (!isPasswordMode && enteredAmount.length() > 0)
-        {
+
             enteredAmount.remove(enteredAmount.length() - 1);
-            cursorPosition -= 1;
-            lcd.setCursor(cursorPosition, 1);
-            lcd.print(" ");
-        }
     }
-    // now for the typing logic
+
+    else
+    
+    {
+        if (isPasswordMode && enteredPassword.length() < 16)
+        
+            enteredPassword += key;
+
+        else if (!isPasswordMode && enteredAmount.length() < 16)
+            enteredAmount += key;
+    }
+
+    // 2. Move the invisible cursor to our saved coordinates
+    oled.setCursor(inputX, inputY);
+
+    // 3. Draw the updated string (plus a trailing space to erase deleted characters!)
+    if (isPasswordMode)
+
+    {
+        // Draw asterisks instead of the real password
+
+        for (int i = 0; i < enteredPassword.length(); i++)
+        {
+            oled.print('*');
+        }
+        oled.print(" "); // The eraser space
+    }
     else
     {
-        if (cursorPosition < 16)
-        {
-            lcd.setCursor(cursorPosition, 1);
-
-            // If it is a password, save the real key but print an asterisk!
-            if (isPasswordMode)
-            {
-                enteredPassword += key;
-                lcd.print('*');
-            }
-            // Otherwise, act completely normal
-            else
-            {
-                enteredAmount += key;
-                lcd.print(key);
-            }
-            cursorPosition += 1;
-        }
+        // Draw the normal amount or ID
+        oled.print(enteredAmount);
+        oled.print(" "); // The eraser space
     }
+
+    // 4. Push the update to the glass!
+    oled.display();
 }
 
-inline void DisplayManager::resetInput()
+inline void DisplayManager::showAdminMenu()
 {
-    enteredAmount = "";
-    enteredPassword = "";
-    cursorPosition = 7;
+    oled.clearDisplay();
 
-    lcd.clear();
-    displayMenu();
-}
+    oled.setTextSize(1);
 
-inline void DisplayManager::processTransaction()
-{
-    lcd.clear();
-    lcd.setCursor(3, 0);
-    lcd.print("Sending...");
-    delay(1000);
+    oled.setCursor(10, 11);
+    oled.print("1. Enroll New ID");
 
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Sent: $");
-    lcd.print(enteredAmount); // Pulls the amount directly from memory
-    delay(2000);
+    oled.setCursor(10, 31);
+    oled.print("2. Delete An ID");
 
-    resetInput();
+    oled.setCursor(10, 51);
+    oled.print("3. Delete ALL ID");
+
+    oled.display();
 }
 
 inline void DisplayManager::showAuthMenu()
 {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("1. Biometric");
-
-    lcd.setCursor(0, 1);
-    lcd.print("2. Password");
-}
-
-inline void DisplayManager::showPasswordPrompt()
-{
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Enter Password: ");
-
-    cursorPosition = 5;
-}
-
-inline String DisplayManager::getEnteredPassword()
-{
-    return enteredPassword;
-}
-
-inline void DisplayManager::showErrorMessage()
-{
-    lcd.clear();
-    lcd.setCursor(1, 0);
-    lcd.print("Wrong Password");
-    delay(2000); // Hold the message on screen for 2 seconds
-
-    // Wipe the wrong password from memory so it doesn't linger
-    enteredPassword = "";
-
-    // Redraw the default PayPoint menu
-    showPasswordPrompt();
+    oled.clearDisplay();
+    
+    oled.setTextSize(1);
+    
+    oled.setCursor(10, 15);
+    oled.print("1. Biometric");
+    
+    oled.setCursor(10, 45);
+    oled.print("2. Password");
+    
+    oled.display();
 }
 
 inline void DisplayManager::showBiometricPrompt()
 {
-    lcd.clear();
-    lcd.setCursor(1, 0);
-    lcd.print("Place Finger");
-    lcd.setCursor(2, 1);
-    lcd.print("On Scanner...");
+    oled.clearDisplay();
+
+    oled.setTextSize(1);
+
+    oled.setCursor(10, 15);
+    oled.print("Place Finger");
+    
+    oled.setCursor(10, 45);
+    oled.print("On Scanner...");
+
+    oled.display();
+}
+
+inline void DisplayManager::showPasswordPrompt()
+{
+    oled.clearDisplay();
+    
+    oled.setTextSize(1);
+
+    oled.setCursor(10, 15);
+    oled.print("Enter Password: ");
+
+    inputX = 10, inputY = 45;
+    
+    oled.display();
 }
 
 inline String DisplayManager::getEnteredAmount()
@@ -183,38 +196,157 @@ inline String DisplayManager::getEnteredAmount()
     return enteredAmount;
 }
 
-inline void DisplayManager::showAdminMenu()
+inline String DisplayManager::getEnteredPassword()
 {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("1. ENROLL NEW ID");
-    lcd.setCursor(0, 1);
-    lcd.print("2. DELETE ID");
+    return enteredPassword;
 }
 
-inline void DisplayManager::showEnrollIDPrompt()
+inline void DisplayManager::processTransaction()
 {
-    enteredAmount = ""; // clearing out the admin password that was entered to get to this state
-    lcd.clear();        // clearing the lcd totally
-    lcd.setCursor(0, 0);
-    lcd.print("Enter ID (1-127)");
-    lcd.setCursor(0, 1);
-    lcd.print("ID: ");
+    oled.clearDisplay();
 
-    cursorPosition = 4; // Set cursor right after "ID: "
+    oled.setTextSize(1);
+
+    oled.setCursor(10, 15);
+    oled.print("Sending...");
+    delay(1000);
+
+    oled.setCursor(10, 45);
+    oled.print("Sent: $");
+
+    inputX = 53, inputY = 45;
+    oled.print(enteredAmount); // Pulls the amount directly from memory
+    oled.display();
+
+    delay(2000);
+
+    resetInput();
+}
+
+
+inline void DisplayManager::showErrorMessage(String errorMessage)
+{
+    oled.clearDisplay();
+
+    oled.setTextSize(1);
+    
+    oled.setCursor(20, 32);
+    
+    oled.print(errorMessage);
+    
+    // wiping the wrong password or entered ID value from memory so it doesn't linger
+    enteredPassword = "";
+    oled.display();
+}
+
+inline void DisplayManager::showSuccessMessage(String successMessage)
+{
+    oled.clearDisplay();
+
+    oled.setTextSize(1);
+
+    oled.setCursor(20, 32);
+    
+    oled.print(successMessage);
+
+    oled.display();
+}
+
+inline void DisplayManager::showPlaceFinger()
+{
+    oled.clearDisplay();
+    oled.setTextSize(1);
+
+    oled.setCursor(10, 32);
+    oled.print("Place Finger");
+
+    oled.display();
 }
 
 inline void DisplayManager::showRemoveFinger()
 {
-    lcd.clear();
-    lcd.setCursor(1, 0);
-    lcd.print("Remove Finger");
+    oled.clearDisplay();
+    
+    oled.setTextSize(1);
+    
+    oled.setCursor(20, 32);
+    oled.print("Remove Finger");
+    
+    oled.display();
 }
 
 inline void DisplayManager::showPlaceAgain()
 {
-    lcd.clear();
-    lcd.setCursor(2, 0);
-    lcd.print("Place Again");
+    oled.clearDisplay();
+
+    oled.setTextSize(1);
+
+    oled.setCursor(20, 32);
+    oled.print("Place Again");
+
+    oled.display();
 }
+
+inline void DisplayManager::showEnrollIDPrompt()
+{
+    oled.clearDisplay(); // clearing the lcd totally
+    enteredAmount = "";  // clearing out the admin password that was entered to get to this state
+
+    oled.setCursor(10, 15);
+
+    oled.print("Enter ID (1-127)");
+    oled.setCursor(10, 45);
+    oled.print("ID: ");
+
+    inputX = 34, inputY = 45;
+    oled.display();
+}
+
+inline void DisplayManager::showDeleteIDPrompt()
+{
+    enteredAmount = "";
+
+    oled.clearDisplay();
+
+    oled.setTextSize(1);
+
+    oled.setCursor(10, 15);
+    oled.print("Delete ID (1-127)");
+
+    oled.setCursor(10, 45);
+    oled.print("ID: ");
+
+    inputX = 35;
+    inputY = 45;
+
+    oled.display();
+}
+
+inline void DisplayManager::showDeleteAllIDPrompt()
+{
+    enteredAmount = "";
+    oled.clearDisplay();
+    
+    oled.setTextSize(1);
+    
+    oled.setCursor(10, 11);
+    oled.print("DELETE ALL ID?");
+    
+    oled.setCursor(10, 31);
+    oled.print("1. Delete All");
+
+    oled.setCursor(10, 51);
+    oled.print("2. Cancel");
+
+    oled.display();
+}
+
+inline void DisplayManager::resetInput()
+{
+    enteredAmount = "";
+    enteredPassword = "";
+
+    displayMenu();
+}
+
 #endif
