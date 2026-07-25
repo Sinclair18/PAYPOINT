@@ -173,11 +173,36 @@ void loop()
     }
     else if (currentState == AWAITING_BIOMETRIC)
     {
+      int matchResult = scanner.scanForMatch();
+
       if (pressedValue == '*')
       {
         leds.setIdle();
         currentState = IDLE_MENU;
         display.resetInput();
+      }
+
+      if (matchResult == 1) // Match Found!
+      {
+        leds.setProcessing();
+        delay(600);
+        display.processTransaction();
+        leds.setIdle();
+        currentState = IDLE_MENU;
+        lastInteractionTime = millis();
+      }
+
+      else if (matchResult == 2) // Wrong Finger!
+      {
+        leds.setError();
+        display.showErrorMessage("Invalid Finger.");
+
+        delay(1500); // Give them time to read the error
+        leds.setIdle();
+
+        // Redraw the biometric prompt so they can try again before the 10-second timer runs out
+        display.showBiometricPrompt();
+        lastInteractionTime = millis(); // Reset the inactivity timer to give them a fair second chance
       }
     }
 

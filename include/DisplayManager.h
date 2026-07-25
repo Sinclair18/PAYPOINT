@@ -211,6 +211,8 @@ inline void DisplayManager::processTransaction()
     oled.print("Sending...");
     delay(1000);
 
+    oled.clearDisplay();
+
     oled.setCursor(10, 45);
     oled.print("Sent: $");
 

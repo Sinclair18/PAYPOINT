@@ -22,7 +22,7 @@ private:
 
 public:
     void init();
-    bool scanForMatch();
+    int scanForMatch();
     bool enrollFingerprint(uint8_t id, DisplayManager &display);
     bool deleteFingerprint(uint8_t id);
     bool deleteAllFingerprints();
@@ -48,34 +48,34 @@ inline void BiometricAuth::init()
     }
 }
 
-inline bool BiometricAuth::scanForMatch()
+inline int BiometricAuth::scanForMatch()
 {
     uint8_t p = finger.getImage();
 
     if (p == FINGERPRINT_NOFINGER)
     {
-        return false;
+        return 0;
     }
 
     if (p != FINGERPRINT_OK)
     {
-        return false;
+        return 2;
     }
 
     p = finger.image2Tz();
     if (p != FINGERPRINT_OK)
     {
-        return false;
+        return 2;
     }
 
     p = finger.fingerSearch();
 
     if (p == FINGERPRINT_OK)
     {
-        return true;
+        return 1;
     }
 
-    return false;
+    return 2;
 }
 
 inline bool BiometricAuth::enrollFingerprint(uint8_t id, DisplayManager &display)
@@ -98,7 +98,8 @@ inline bool BiometricAuth::enrollFingerprint(uint8_t id, DisplayManager &display
 
     p = finger.fingerFastSearch();
 
-    if (p == FINGERPRINT_OK) {
+    if (p == FINGERPRINT_OK)
+    {
         display.showErrorMessage("Duplicate Detected");
         return false;
     }
