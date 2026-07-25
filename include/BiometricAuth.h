@@ -10,6 +10,8 @@ cpp files*/
 scanning user fingerprint*/
 #include <Adafruit_Fingerprint.h>
 
+#include "../include/DisplayManager.h"
+
 
 /* the class created to initialize the fingerprint module and put the authentication functions
 to so I don't flood the main.cpp with them*/
@@ -21,7 +23,7 @@ private:
 
 public:
     void init();
-    bool enrollFingerprint(uint8_t userID);
+    bool enrollFingerprint(uint8_t id, DisplayManager &display);
     bool scanForMatch();
 };
 
@@ -70,52 +72,65 @@ inline bool BiometricAuth::scanForMatch() {
     return false;
 }
 
-inline bool BiometricAuth::enrollFingerprint(uint8_t userID) {
+inline bool BiometricAuth::enrollFingerprint(uint8_t id, DisplayManager &display)
+{
     int p = -1;
+    unsigned long startTime = millis();
 
-    while (p != FINGERPRINT_OK) {
-        finger.getImage();
-    }
-
-    p = finger.image2Tz(1);
-
-    if (p != FINGERPRINT_OK) {
-        return false;
-    }
-
-    // 3. Waiting for the user to remove their finger
-    p = 0;
-    while (p != FINGERPRINT_NOFINGER)
-    {
-        p = finger.getImage();
-    }
-
-    // 4. Waiting for them to place the same finger again
-    p = -1;
+    // 1. Wait for the user to place their finger for the first time
     while (p != FINGERPRINT_OK)
     {
         p = finger.getImage();
+        delay(50);
+        if (millis() - startTime > 10000)
+            return false;
     }
 
-    // 5. converting the second image to a mathematical map (Buffer 2)
+    p = finger.image2Tz(1);
+    if (p != FINGERPRINT_OK)
+        return false;
+
+    // --- NEW: Tell the user to lift their finger! ---
+    display.showRemoveFinger();
+
+    // 2. Wait for the user to remove their finger
+    p = 0;
+    startTime = millis();
+    while (p != FINGERPRINT_NOFINGER)
+    {
+        p = finger.getImage();
+        delay(50);
+        if (millis() - startTime > 10000)
+            return false;
+    }
+
+    // --- NEW: Tell the user to scan it again! ---
+    display.showPlaceAgain();
+
+    // 3. Wait for them to place the same finger again
+    p = -1;
+    startTime = millis();
+    while (p != FINGERPRINT_OK)
+    {
+        p = finger.getImage();
+        delay(50);
+        if (millis() - startTime > 10000)
+            return false;
+    }
+
     p = finger.image2Tz(2);
     if (p != FINGERPRINT_OK)
         return false;
 
     p = finger.createModel();
-
     if (p != FINGERPRINT_OK)
-    {
-        return false; // The two scans didn't match (user moved their finger!)
-    }
+        return false;
 
-
-    p = finger.storeModel(userID);
-
-    if (p == FINGERPRINT_OK){
+    p = finger.storeModel(id);
+    if (p == FINGERPRINT_OK)
         return true;
-    }
 
     return false;
 }
+
 #endif

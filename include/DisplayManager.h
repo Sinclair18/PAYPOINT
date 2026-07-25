@@ -2,8 +2,10 @@
 #ifndef DISPLAYMANAGER_H
 #define DISPLAYMANAGER_H
 
-// included the necessary header files 
+// included the necessary header files
 #include "../include/Config.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
 #include <LiquidCrystal_I2C.h>
 
 #include <Arduino.h>
@@ -18,8 +20,7 @@ private:
     String enteredPassword = "";
 
 public:
-
-// all functions to effectively handle the full FSM
+    // all functions to effectively handle the full FSM
     void init();
     void displayMenu();
     void printKey(char key, bool isPasswordMode);
@@ -33,6 +34,8 @@ public:
     String getEnteredAmount();
     void showAdminMenu();
     void showEnrollIDPrompt();
+    void showRemoveFinger();
+    void showPlaceAgain();
 };
 
 inline void DisplayManager::init()
@@ -147,7 +150,8 @@ inline void DisplayManager::showPasswordPrompt()
     cursorPosition = 5;
 }
 
-inline String DisplayManager::getEnteredPassword(){
+inline String DisplayManager::getEnteredPassword()
+{
     return enteredPassword;
 }
 
@@ -174,11 +178,13 @@ inline void DisplayManager::showBiometricPrompt()
     lcd.print("On Scanner...");
 }
 
-inline String DisplayManager::getEnteredAmount() {
+inline String DisplayManager::getEnteredAmount()
+{
     return enteredAmount;
 }
 
-inline void DisplayManager::showAdminMenu() {
+inline void DisplayManager::showAdminMenu()
+{
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("1. ENROLL NEW ID");
@@ -186,14 +192,29 @@ inline void DisplayManager::showAdminMenu() {
     lcd.print("2. DELETE ID");
 }
 
-inline void DisplayManager::showEnrollIDPrompt() {
+inline void DisplayManager::showEnrollIDPrompt()
+{
     enteredAmount = ""; // clearing out the admin password that was entered to get to this state
-    lcd.clear(); // clearing the lcd totally
+    lcd.clear();        // clearing the lcd totally
     lcd.setCursor(0, 0);
     lcd.print("Enter ID (1-127)");
     lcd.setCursor(0, 1);
     lcd.print("ID: ");
 
     cursorPosition = 4; // Set cursor right after "ID: "
+}
+
+inline void DisplayManager::showRemoveFinger()
+{
+    lcd.clear();
+    lcd.setCursor(1, 0);
+    lcd.print("Remove Finger");
+}
+
+inline void DisplayManager::showPlaceAgain()
+{
+    lcd.clear();
+    lcd.setCursor(2, 0);
+    lcd.print("Place Again");
 }
 #endif

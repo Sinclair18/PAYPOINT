@@ -64,14 +64,16 @@ void loop()
       if (pressedValue == '#')
 
       {
-        
-        if (display.getEnteredAmount() == ADMIN_PASSWORD) {
+
+        if (display.getEnteredAmount() == ADMIN_PASSWORD)
+        {
 
           currentState = ADMIN_MODE;
           display.showAdminMenu();
         }
 
-        else {
+        else
+        {
 
           display.showAuthMenu();
           currentState = AUTH_SELECTION;
@@ -169,55 +171,86 @@ void loop()
         display.printKey(pressedValue, true);
       }
     }
-  else if (currentState = AWAITING_BIOMETRIC)
-  {
-    if (pressedValue == '*'){
-      leds.setIdle();
-      currentState = IDLE_MENU;
-      display.resetInput();
-    }
-  }
-
-  else if (currentState == ADMIN_MODE)
-  {
-    if (pressedValue == '*')
+    else if (currentState == AWAITING_BIOMETRIC)
     {
-      // escape out to the main menu
-      currentState = IDLE_MENU;
-      leds.setIdle();
-      display.resetInput();
+      if (pressedValue == '*')
+      {
+        leds.setIdle();
+        currentState = IDLE_MENU;
+        display.resetInput();
+      }
     }
 
-    else if (pressedValue == '1')
+    else if (currentState == ADMIN_MODE)
     {
-      leds.setProcessing();
-      delay(500);
-      leds.setIdle();
-      // the "Start Enrollment" process then starts
-      display.showEnrollIDPrompt();
-      currentState = AWAITING_ENROLL_ID;
+      if (pressedValue == '*')
+      {
+        // escape out to the main menu
+        currentState = IDLE_MENU;
+        leds.setIdle();
+        display.resetInput();
+      }
+
+      else if (pressedValue == '1')
+      {
+        leds.setProcessing();
+        delay(500);
+        leds.setIdle();
+        // the "Start Enrollment" process then starts
+        display.showEnrollIDPrompt();
+        currentState = AWAITING_ENROLL_ID;
+      }
+
+      else if (pressedValue == '2')
+      {
+        // the "delete ID" process starts here
+      }
     }
 
-    else if (pressedValue == '2'){
-      // the "delete ID" process starts here
+    else if (currentState == AWAITING_ENROLL_ID)
+    {
+      if (pressedValue == '*')
+      {
+        display.showAdminMenu();
+        currentState = ADMIN_MODE;
+      }
+
+      else if (pressedValue >= '0' && pressedValue <= '9')
+      {
+        display.printKey(pressedValue, false);
+      }
+
+      else if (pressedValue == '#')
+      {
+        int enrollID = display.getEnteredAmount().toInt();
+
+        if (enrollID >= 0 && enrollID <= 127)
+        {
+          display.showBiometricPrompt();
+
+          if (scanner.enrollFingerprint(enrollID, display) == true)
+          {
+            leds.setProcessing();
+            delay(700);
+            leds.setIdle();
+            display.showAdminMenu();
+            currentState = ADMIN_MODE;
+          }
+
+          else
+          {
+            // Failure! (Scans didn't match, or sensor error)
+            leds.setError();
+            display.showErrorMessage();
+
+            // Show error for a moment, then return to Admin Menu
+            delay(700);
+            display.showAdminMenu();
+            currentState = ADMIN_MODE;
+          }
+        }
+      }
     }
-  }
-
-
-  else if (currentState = AWAITING_ENROLL_ID) {
-    if (pressedValue == '*') {
-      display.showAdminMenu();
-      currentState = ADMIN_MODE;
-    }
-
-    else if (pressedValue >= 1 || pressedValue <= 9) {
-      display.printKey(pressedValue, false);
-    }
-
-    else if (pressedValue == '#') {
-
-    }
-  }
 
     /* back to that timer that was set to watch out for 10 seconds of inactivity, the system resets
     to idle if the condition is met*/
@@ -230,8 +263,10 @@ void loop()
     delay(10); // tiny delay for smoothing the esp32
   }
 
-  if (currentState == AWAITING_BIOMETRIC){
-    if (scanner.scanForMatch() == true){
+  if (currentState == AWAITING_BIOMETRIC)
+  {
+    if (scanner.scanForMatch() == true)
+    {
       leds.setProcessing();
       delay(600);
       display.processTransaction();

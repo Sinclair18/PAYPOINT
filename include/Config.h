@@ -14,7 +14,8 @@ cpp files*/
 
 /* since I'd be using i2c lcd library, I just hard coded the lcd address, change or ignore the value if you
  choose to use another lcd type */
-#define LCD_ADDRESS 0X27
+#define LCD_ADDRESS 0X3C
+#define 
 
 /* the AS608 fingerprint module is specifically what I used for this project, the RX Pin of the
 module is connected to the serial2 tx pin of esp32 dev module (pin 17) and the tx pin of the module connects
