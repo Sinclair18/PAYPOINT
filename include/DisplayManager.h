@@ -56,9 +56,9 @@ inline void DisplayManager::init()
 inline void DisplayManager::displayMenu()
 {
     oled.clearDisplay();
-    
+
     enteredAmount = "";
-    
+
     oled.setTextSize(2);
 
     oled.setCursor(15, 0);
@@ -93,10 +93,10 @@ inline void DisplayManager::printKey(char key, bool isPasswordMode = false)
     }
 
     else
-    
+
     {
         if (isPasswordMode && enteredPassword.length() < 16)
-        
+
             enteredPassword += key;
 
         else if (!isPasswordMode && enteredAmount.length() < 16)
@@ -150,15 +150,15 @@ inline void DisplayManager::showAdminMenu()
 inline void DisplayManager::showAuthMenu()
 {
     oled.clearDisplay();
-    
+
     oled.setTextSize(1);
-    
+
     oled.setCursor(10, 15);
     oled.print("1. Biometric");
-    
+
     oled.setCursor(10, 45);
     oled.print("2. Password");
-    
+
     oled.display();
 }
 
@@ -170,7 +170,7 @@ inline void DisplayManager::showBiometricPrompt()
 
     oled.setCursor(10, 15);
     oled.print("Place Finger");
-    
+
     oled.setCursor(10, 45);
     oled.print("On Scanner...");
 
@@ -180,14 +180,14 @@ inline void DisplayManager::showBiometricPrompt()
 inline void DisplayManager::showPasswordPrompt()
 {
     oled.clearDisplay();
-    
+
     oled.setTextSize(1);
 
     oled.setCursor(10, 15);
     oled.print("Enter Password: ");
 
     inputX = 10, inputY = 45;
-    
+
     oled.display();
 }
 
@@ -225,17 +225,16 @@ inline void DisplayManager::processTransaction()
     resetInput();
 }
 
-
 inline void DisplayManager::showErrorMessage(String errorMessage)
 {
     oled.clearDisplay();
 
     oled.setTextSize(1);
-    
+
     oled.setCursor(20, 32);
-    
+
     oled.print(errorMessage);
-    
+
     // wiping the wrong password or entered ID value from memory so it doesn't linger
     enteredPassword = "";
     oled.display();
@@ -248,7 +247,7 @@ inline void DisplayManager::showSuccessMessage(String successMessage)
     oled.setTextSize(1);
 
     oled.setCursor(20, 32);
-    
+
     oled.print(successMessage);
 
     oled.display();
@@ -268,12 +267,12 @@ inline void DisplayManager::showPlaceFinger()
 inline void DisplayManager::showRemoveFinger()
 {
     oled.clearDisplay();
-    
+
     oled.setTextSize(1);
-    
+
     oled.setCursor(20, 32);
     oled.print("Remove Finger");
-    
+
     oled.display();
 }
 
@@ -328,12 +327,12 @@ inline void DisplayManager::showDeleteAllIDPrompt()
 {
     enteredAmount = "";
     oled.clearDisplay();
-    
+
     oled.setTextSize(1);
-    
+
     oled.setCursor(10, 11);
     oled.print("DELETE ALL ID?");
-    
+
     oled.setCursor(10, 31);
     oled.print("1. Delete All");
 
