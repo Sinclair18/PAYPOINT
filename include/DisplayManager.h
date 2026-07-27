@@ -64,15 +64,15 @@ inline void DisplayManager::displayMenu()
     oled.setCursor(15, 0);
     oled.print("PAYPOINT");
 
-    // oled.setTextSize(1);
-    oled.setCursor(5, 20);
-    oled.print("Enter Amt:");
+    oled.setTextSize(1);
+    oled.setCursor(5, 45);
+    oled.print("Amount: ");
 
-    oled.setCursor(15, 40);
+    oled.setCursor(41, 45);
     oled.print('$');
 
-    inputX = 26; // Start typing after "Amt: $"
-    inputY = 40; // Stay on the same row
+    inputX = 42; // Start typing after "Amt: $"
+    inputY = 45; // Stay on the same row
     oled.display();
 }
 
