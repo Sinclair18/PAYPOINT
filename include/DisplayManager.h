@@ -21,7 +21,8 @@ private:
 public:
     // all functions to effectively handle the full FSM
     void init();
-    void displayMenu();
+    void showMainMenu();
+    void showAmountPrompt();
     void printKey(char key, bool isPasswordMode);
     void showAdminMenu();
     void showAuthMenu();
@@ -53,7 +54,26 @@ inline void DisplayManager::init()
     oled.display();
 }
 
-inline void DisplayManager::displayMenu()
+inline void DisplayManager::showMainMenu() {
+    oled.clearDisplay();
+    oled.setTextSize(1);
+
+    oled.setCursor(1, 0);
+    oled.print("1. Send Money");
+
+    oled.setCursor(0, 15);
+    oled.print("2. Check Balance");
+
+    oled.setCursor(0, 30);
+    oled.print("3. View History");
+
+    oled.setCursor(0, 45);
+    oled.print("4. Admin Panel");
+
+    oled.display();
+}
+
+inline void DisplayManager::showAmountPrompt()
 {
     oled.clearDisplay();
 
@@ -247,7 +267,7 @@ inline void DisplayManager::showSuccessMessage(String successMessage)
 
     oled.setTextSize(1);
 
-    oled.setCursor(5, 30);
+    oled.setCursor(5, 20);
 
     oled.print(successMessage);
 
@@ -348,7 +368,7 @@ inline void DisplayManager::resetInput()
     enteredAmount = "";
     enteredPassword = "";
 
-    displayMenu();
+    showMainMenu();
 }
 
 #endif

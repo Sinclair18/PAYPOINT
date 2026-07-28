@@ -17,6 +17,7 @@ class AppController {
 
         SystemStates currentState = IDLE_MENU;
         unsigned long lastInteractionTime = 0;
+        int failedBiometricAttempts = 0;
 
     public:
         void init();

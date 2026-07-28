@@ -61,11 +61,12 @@ enum SystemStates
 {
     IDLE_MENU,
 
+    AWAITING_ADMIN_PASS,
+
     AWAITING_AMOUNT,
 
     AUTH_SELECTION,
 
-    
     AWAITING_PASSWORD,
 
     AWAITING_BIOMETRIC,

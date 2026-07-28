@@ -12,7 +12,7 @@ void AppController::init()
 
     scanner.init();
 
-    display.displayMenu();
+    display.showMainMenu();
 }
 
 void AppController::run()
@@ -33,42 +33,94 @@ void AppController::run()
         or waiting for an amount to be entered, and the hashtag value is entered, the current state
         changes to the auth auth selection state with two sub states - Biometric and Password */
 
-        if (currentState == IDLE_MENU || currentState == AWAITING_AMOUNT)
+        // TRACK 1: The Main Menu
+        if (currentState == IDLE_MENU)
         {
-
-            if (pressedValue == '#')
-
+            if (pressedValue == '1')
             {
+                display.showAmountPrompt(); // Show the "PAYPOINT Amt: $" screen
+                currentState = AWAITING_AMOUNT;
 
-                if (display.getEnteredAmount() == ADMIN_PASSWORD)
-                {
+                leds.setTyping(); // Turn on the yellow LED for typing
+            }
+            else if (pressedValue == '2' || pressedValue == '3')
+            {
+                display.showErrorMessage("Coming Soon!");
+
+                delay(1500);
+                display.showMainMenu();
+            }
+            else if (pressedValue == '4')
+            {
+                display.showPasswordPrompt(); // Borrowing this screen for the Admin login
+                currentState = AWAITING_ADMIN_PASS;
+
+                leds.setTyping();
+            }
+        }
+
+        else if (currentState == AWAITING_ADMIN_PASS) {
+            if (pressedValue == '*') {
+
+                leds.setIdle();
+
+                currentState = IDLE_MENU;
+                display.resetInput();
+            }
+
+            else if (pressedValue == '#') {
+                if (display.getEnteredPassword() == MASTER_PASSWORD) {
+
+                    leds.setProcessing();
+                    delay(300);
+
+                    leds.setTyping();
+
+                    display.showAdminMenu();
 
                     currentState = ADMIN_MODE;
-                    display.showAdminMenu();
                 }
 
                 else
                 {
+                    // Kick them out if the password is wrong
+                    leds.setError();
+                    display.showErrorMessage("Access Denied");
 
-                    display.showAuthMenu();
-                    currentState = AUTH_SELECTION;
+                    delay(1500);
+                    leds.setIdle();
+
+                    display.resetInput();
+
+                    currentState = IDLE_MENU;
                 }
             }
-            /* or else if the current state is specifically in the idle menu and the hashtag value
-            is entered, the led activates for set typing*/
 
-            else
+            else {
+                display.printKey(pressedValue, true);
+            }
+        }
+
+        // TRACK 2: Typing the Amount
+        else if (currentState == AWAITING_AMOUNT)
+        {
+            if (pressedValue == '*')
             {
-                // If this is the very first number pressed...
-                if (currentState == IDLE_MENU)
+                // Cancel back to main menu
+                display.resetInput();
+                leds.setIdle();
 
-                {
-
-                    leds.setTyping();               // Turn on Yellow LED
-                    currentState = AWAITING_AMOUNT; // Lock into typing mode
-                }
-
-                display.printKey(pressedValue); // Type the number
+                currentState = IDLE_MENU;
+            }
+            else if (pressedValue == '#')
+            {
+                // Done typing amount, move to auth selection!
+                display.showAuthMenu();
+                currentState = AUTH_SELECTION;
+            }
+            else if (pressedValue >= '0' && pressedValue <= '9')
+            {
+                display.printKey(pressedValue, false);
             }
         }
 
@@ -101,7 +153,7 @@ void AppController::run()
                 currentState = IDLE_MENU;
                 leds.setIdle();
 
-                display.displayMenu();
+                display.showMainMenu();
             }
         }
 
@@ -118,6 +170,7 @@ void AppController::run()
                     leds.setError();
                     display.showErrorMessage("Wrong Password");
                     delay(500);
+
                     leds.setTyping();
                     currentState = AWAITING_PASSWORD;
                 }
@@ -127,6 +180,7 @@ void AppController::run()
                     leds.setProcessing();
                     delay(1000);
                     display.processTransaction();
+
                     leds.setIdle();
                     currentState = IDLE_MENU;
                 }
@@ -136,6 +190,7 @@ void AppController::run()
                     leds.setError();
                     display.showErrorMessage("Wrong Password");
                     delay(500);
+
                     leds.setTyping();
                     currentState = AWAITING_PASSWORD;
                 }
@@ -148,36 +203,13 @@ void AppController::run()
         }
         else if (currentState == AWAITING_BIOMETRIC)
         {
-            int matchResult = scanner.scanForMatch();
 
             if (pressedValue == '*')
             {
                 leds.setIdle();
                 currentState = IDLE_MENU;
+
                 display.resetInput();
-            }
-
-            if (matchResult == 1) // Match Found!
-            {
-                leds.setProcessing();
-                delay(600);
-                display.processTransaction();
-                leds.setIdle();
-                currentState = IDLE_MENU;
-                lastInteractionTime = millis();
-            }
-
-            else if (matchResult == 2 || matchResult == 0) // Wrong Finger!
-            {
-                leds.setError();
-                display.showErrorMessage("Invalid Finger.\n Try Again");
-
-                delay(1500); // Give them time to read the error
-                leds.setIdle();
-
-                // Redraw the biometric prompt so they can try again before the 10-second timer runs out
-                display.showBiometricPrompt();
-                lastInteractionTime = millis(); // Reset the inactivity timer to give them a fair second chance
             }
         }
 
@@ -188,6 +220,7 @@ void AppController::run()
                 // escape out to the main menu
                 currentState = IDLE_MENU;
                 leds.setIdle();
+
                 display.resetInput();
             }
 
@@ -196,6 +229,7 @@ void AppController::run()
                 leds.setProcessing();
                 delay(500);
                 leds.setIdle();
+
                 // the "Start Enrollment" process then starts
                 display.showEnrollIDPrompt();
                 currentState = AWAITING_ENROLL_ID;
@@ -206,6 +240,7 @@ void AppController::run()
                 // the "delete ID" process starts here
                 leds.setProcessing();
                 delay(500);
+
                 leds.setIdle();
 
                 display.showDeleteIDPrompt();
@@ -216,6 +251,8 @@ void AppController::run()
             {
                 // the "delete All ID" process starts here
                 leds.setProcessing();
+
+                
                 delay(500);
                 leds.setIdle();
 
@@ -385,20 +422,46 @@ void AppController::run()
 
     if (currentState == AWAITING_BIOMETRIC)
     {
+        int matchResult = scanner.scanForMatch();
 
-        if (scanner.scanForMatch() == true)
-
+        if (matchResult == 1) // Match Found!
         {
-
+            failedBiometricAttempts = 0; // Reset the counter on success!
             leds.setProcessing();
-
             delay(600);
-
             display.processTransaction();
             leds.setIdle();
-
             currentState = IDLE_MENU;
             lastInteractionTime = millis();
         }
+        else if (matchResult == 2) // Wrong Finger!
+        {
+            failedBiometricAttempts++; // Add a strike!
+
+            if (failedBiometricAttempts >= 3)
+            {
+                // Strike 3: You're out!
+                leds.setError();
+                display.showErrorMessage("Too Many Errors");
+                delay(1500);
+
+                failedBiometricAttempts = 0; // Reset for the next time
+                leds.setIdle();
+                display.resetInput();
+                currentState = IDLE_MENU;
+            }
+            else
+            {
+                // Strike 1 and 2: Try again
+                leds.setError();
+                display.showErrorMessage("Access Denied.\n\nTry Again");
+                delay(1500);
+
+                leds.setIdle();
+                display.showBiometricPrompt();
+                lastInteractionTime = millis();
+            }
+        }
+        // If it's 0 (no finger), it skips all this and waits
     }
 }
