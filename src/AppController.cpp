@@ -11,8 +11,11 @@ void AppController::init()
     display.init();
 
     scanner.init();
-
+    
+    router.init();
+    
     display.showMainMenu();
+
 }
 
 void AppController::run()
@@ -69,7 +72,7 @@ void AppController::run()
             }
 
             else if (pressedValue == '#') {
-                if (display.getEnteredPassword() == MASTER_PASSWORD) {
+                if (display.getEnteredPassword() == ADMIN_PASSWORD) {
 
                     leds.setProcessing();
                     delay(300);
@@ -252,7 +255,7 @@ void AppController::run()
                 // the "delete All ID" process starts here
                 leds.setProcessing();
 
-                
+
                 delay(500);
                 leds.setIdle();
 

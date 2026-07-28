@@ -19,6 +19,7 @@ SH110X library for this oled */
 #define OLED_WIDTH 128
 #define OLED_RESET -1
 
+
 /* the AS608 fingerprint module is specifically what I used for this project, the RX Pin of the
 module is connected to the serial2 tx pin of esp32 dev module (pin 17) and the tx pin of the module connects
 to the serial2 rx pin of the esp32 dev module*/

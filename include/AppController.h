@@ -7,6 +7,7 @@
 #include "../include/InputPad.h"
 #include "../include/LedManager.h"
 #include "../include/BiometricAuth.h"
+#include "../include/NetworkBridge.h"
 
 class AppController {
     private:
@@ -14,6 +15,7 @@ class AppController {
         InputPad pad;
         LedManager leds;
         DisplayManager display;
+        NetworkBridge router;
 
         SystemStates currentState = IDLE_MENU;
         unsigned long lastInteractionTime = 0;
