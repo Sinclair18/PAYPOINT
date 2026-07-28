@@ -167,10 +167,10 @@ void AppController::run()
                 lastInteractionTime = millis();
             }
 
-            else if (matchResult == 2) // Wrong Finger!
+            else if (matchResult == 2 || matchResult == 0) // Wrong Finger!
             {
                 leds.setError();
-                display.showErrorMessage("Invalid Finger.");
+                display.showErrorMessage("Invalid Finger.\n Try Again");
 
                 delay(1500); // Give them time to read the error
                 leds.setIdle();

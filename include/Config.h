@@ -48,8 +48,8 @@ const int MIN_PASSWORD_LENGTH = 6;
 const uint8_t KEYPAD_ROWS = 4;
 const uint8_t KEYPAD_COLS = 4;
 
-uint8_t rowPins[KEYPAD_ROWS] = {26, 27, 14, 13};
-uint8_t colPins[KEYPAD_COLS] = {25, 33, 32, 23};
+const uint8_t rowPins[KEYPAD_ROWS] = {26, 27, 14, 13};
+const uint8_t colPins[KEYPAD_COLS] = {25, 33, 32, 23};
 const char keys[KEYPAD_ROWS][KEYPAD_COLS] = {{'1', '2', '3', 'A'},
                                              {'4', '5', '6', 'B'},
                                              {'7', '8', '9', 'C'},

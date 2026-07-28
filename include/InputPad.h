@@ -20,7 +20,7 @@ public:
     char getKeyPressed();
 };
 
-void InputPad::init()
+inline void InputPad::init()
 {
 
     // looping through each pin on the keypad row and sending 0v to it
@@ -38,7 +38,7 @@ void InputPad::init()
     }
 }
 
-char InputPad::getKeyPressed()
+inline char InputPad::getKeyPressed()
 {
 
     // OUTER LOOP: The ESP32 picks one row at a time and turns it ON (LOW)

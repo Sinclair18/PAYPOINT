@@ -247,7 +247,7 @@ inline void DisplayManager::showSuccessMessage(String successMessage)
 
     oled.setTextSize(1);
 
-    oled.setCursor(20, 32);
+    oled.setCursor(5, 30);
 
     oled.print(successMessage);
 
