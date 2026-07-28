@@ -68,10 +68,11 @@ inline void DisplayManager::displayMenu()
     oled.setCursor(5, 45);
     oled.print("Amount: ");
 
-    oled.setCursor(41, 45);
+    oled.setCursor(54, 45);
     oled.print('$');
+    oled.display();
 
-    inputX = 42; // Start typing after "Amt: $"
+    inputX = 60; // Start typing after "Amt: $"
     inputY = 45; // Stay on the same row
     oled.display();
 }
