@@ -11,11 +11,12 @@ void AppController::init()
     display.init();
 
     scanner.init();
-    
-    router.init();
-    
-    display.showMainMenu();
 
+    router.init();
+
+    router.testPaystackName();
+
+    display.showMainMenu();
 }
 
 void AppController::run()
@@ -60,10 +61,18 @@ void AppController::run()
 
                 leds.setTyping();
             }
+
+            else if (pressedValue == '5')
+            {
+                display.showErrorMessage("Coming Soon!");
+                display.showMainMenu();
+            }
         }
 
-        else if (currentState == AWAITING_ADMIN_PASS) {
-            if (pressedValue == '*') {
+        else if (currentState == AWAITING_ADMIN_PASS)
+        {
+            if (pressedValue == '*')
+            {
 
                 leds.setIdle();
 
@@ -71,8 +80,10 @@ void AppController::run()
                 display.resetInput();
             }
 
-            else if (pressedValue == '#') {
-                if (display.getEnteredPassword() == ADMIN_PASSWORD) {
+            else if (pressedValue == '#')
+            {
+                if (display.getEnteredPassword() == ADMIN_PASSWORD)
+                {
 
                     leds.setProcessing();
                     delay(300);
@@ -99,7 +110,8 @@ void AppController::run()
                 }
             }
 
-            else {
+            else
+            {
                 display.printKey(pressedValue, true);
             }
         }
@@ -160,15 +172,43 @@ void AppController::run()
             }
         }
 
+        else if (currentState == AWAITING_BIOMETRIC)
+        {
+
+            if (pressedValue == '*')
+            {
+                leds.setTyping();
+                currentState = AUTH_SELECTION;
+
+                display.showAuthMenu();
+            }
+        }
+
         /* track 3 if the current state is awaiting password and the password entered matches the
         one defined in the config.h file and is also greater than or equal to the minimum that should
         be entered, the money gets transferred and the system goes back to idle*/
         else if (currentState == AWAITING_PASSWORD)
         {
-            if (pressedValue == '#')
+            if (pressedValue == '*')
+            {
+                if (display.getEnteredPassword().length() == 0)
+                {
+                    leds.setTyping();
+
+                    currentState = AUTH_SELECTION;
+                    display.showAuthMenu();
+                }
+
+                else
+                {
+                    display.printKey(pressedValue, true);
+                }
+            }
+
+            else if (pressedValue == '#')
             {
                 // 1. First, check if the password is long enough to even bother verifying
-                if (display.getEnteredPassword().length() < MIN_PASSWORD_LENGTH)
+                if (display.getEnteredPassword().length() != MIN_PASSWORD_LENGTH)
                 {
                     leds.setError();
                     display.showErrorMessage("Wrong Password");
@@ -182,6 +222,7 @@ void AppController::run()
                 {
                     leds.setProcessing();
                     delay(1000);
+                    router.sendTransaction(display.getEnteredAmount().toInt(), "Password", 1);
                     display.processTransaction();
 
                     leds.setIdle();
@@ -202,17 +243,6 @@ void AppController::run()
             else
             {
                 display.printKey(pressedValue, true);
-            }
-        }
-        else if (currentState == AWAITING_BIOMETRIC)
-        {
-
-            if (pressedValue == '*')
-            {
-                leds.setIdle();
-                currentState = IDLE_MENU;
-
-                display.resetInput();
             }
         }
 
@@ -254,7 +284,6 @@ void AppController::run()
             {
                 // the "delete All ID" process starts here
                 leds.setProcessing();
-
 
                 delay(500);
                 leds.setIdle();
@@ -432,8 +461,12 @@ void AppController::run()
             failedBiometricAttempts = 0; // Reset the counter on success!
             leds.setProcessing();
             delay(600);
+
+            router.sendTransaction(display.getEnteredAmount().toInt(), "Biometric", 1);
             display.processTransaction();
+
             leds.setIdle();
+
             currentState = IDLE_MENU;
             lastInteractionTime = millis();
         }

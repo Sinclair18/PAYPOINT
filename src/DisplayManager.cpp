@@ -20,14 +20,17 @@ void DisplayManager::showMainMenu()
     oled.setCursor(1, 0);
     oled.print("1. Send Money");
 
-    oled.setCursor(0, 15);
+    oled.setCursor(0, 12);
     oled.print("2. Check Balance");
 
-    oled.setCursor(0, 30);
+    oled.setCursor(0, 24);
     oled.print("3. View History");
 
-    oled.setCursor(0, 45);
+    oled.setCursor(0, 36);
     oled.print("4. Admin Panel");
+    
+    oled.setCursor(0, 48);
+    oled.print("5. Manage Users");
 
     oled.display();
 }
