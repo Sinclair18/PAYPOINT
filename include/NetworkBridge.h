@@ -9,8 +9,7 @@
 
 class NetworkBridge {
     private:
-        const char *ssid = "SINCLAIR";
-        const char *password = "myPASSWORD";
+        const char *ssid = "SINCLAIR", *password = "myPASSWORD";
 
         const char *paystackKey = "Bearer sk_test_fc6ba6ffd558ef1b5cf8b8f7477dca06b0cdad57";
 
@@ -18,8 +17,8 @@ class NetworkBridge {
         void init();
         bool isConnected();
 
-        void sendTransaction(int amount, String authMethod, int userID);
-        void testPaystackName();
+        void sendTransaction(int amount, String authMethod, int userID, String destinationAccount);
+        String testPaystackName(String accNo, String bankCode);
 };
 
 #endif

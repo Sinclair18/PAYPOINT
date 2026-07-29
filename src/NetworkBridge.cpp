@@ -25,7 +25,7 @@ bool NetworkBridge::isConnected()
     return WiFi.status() == WL_CONNECTED;
 }
 
-void NetworkBridge::sendTransaction(int amount, String authMethod, int userID)
+void NetworkBridge::sendTransaction(int amount, String authMethod, int userID, String destinationAccount)
 {
     if (isConnected())
     {
@@ -34,13 +34,13 @@ void NetworkBridge::sendTransaction(int amount, String authMethod, int userID)
         document["amount"] = amount;
         document["auth_method"] = authMethod;
         document["user_ID"] = userID;
-        
+        document["destination_account"] = destinationAccount;
+
         String jsonPayload;
         serializeJson(document, jsonPayload);
 
         Serial.print("Sending Json: ");
         Serial.println(jsonPayload);
-
 
         HTTPClient http;
 
@@ -70,7 +70,7 @@ void NetworkBridge::sendTransaction(int amount, String authMethod, int userID)
     }
 }
 
-void NetworkBridge::testPaystackName()
+String NetworkBridge::testPaystackName(String accNo, String bankCode)
 {
     if (isConnected())
     {
@@ -81,7 +81,7 @@ void NetworkBridge::testPaystackName()
         HTTPClient http;
 
         // 2. The Paystack Resolve URL (Replace with your 10-digit UBA account)
-        String url = "https://api.paystack.co/bank/resolve?account_number=2330558457&bank_code=033";
+        String url = "https://api.paystack.co/bank/resolve?account_number=" + accNo + "&bank_code=" + bankCode;
 
         Serial.println("Asking Paystack for account name...");
 
@@ -100,18 +100,34 @@ void NetworkBridge::testPaystackName()
 
         // 5. If it worked (200), print the JSON response!
         if (httpResponseCode == 200)
+
         {
+
             String response = http.getString();
+            JsonDocument document;
+
+            deserializeJson(document, response);
+
+            String extractedName = document["data"]["account_name"].as<String>();
+
             Serial.println("--- Paystack Response ---");
             Serial.println(response);
             Serial.println("-------------------------");
+            http.end();
+
+            return extractedName;
         }
         else
         {
-            // If it fails, print the error so we can debug it
+            // NEW: Print the exact error code and Paystack's message!
+            Serial.print("Failed! HTTP Code: ");
+            Serial.println(httpResponseCode);
             Serial.println(http.getString());
-        }
 
-        http.end();
+            http.end();
+            return "API_ERROR";
+        }
     }
+
+    return "NO_WIFI";
 }

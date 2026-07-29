@@ -14,8 +14,6 @@ void AppController::init()
 
     router.init();
 
-    router.testPaystackName();
-
     display.showMainMenu();
 }
 
@@ -42,8 +40,8 @@ void AppController::run()
         {
             if (pressedValue == '1')
             {
-                display.showAmountPrompt(); // Show the "PAYPOINT Amt: $" screen
-                currentState = AWAITING_AMOUNT;
+                display.showAccountPrompt(); // Show the "PAYPOINT Amt: $" screen
+                currentState = AWAITING_DESTINATION_ACCOUNT;
 
                 leds.setTyping(); // Turn on the yellow LED for typing
             }
@@ -67,6 +65,94 @@ void AppController::run()
                 display.showErrorMessage("Coming Soon!");
                 display.showMainMenu();
             }
+        }
+
+        else if (currentState == AWAITING_DESTINATION_ACCOUNT) {
+
+            if (pressedValue == '*') {
+                if (display.getDestinationAccount().length() == 0) {
+
+                    leds.setIdle();
+                    display.showMainMenu();
+    
+                    currentState = IDLE_MENU;
+                }
+
+                else {
+                    display.printKey(pressedValue, false, true);
+                }
+                
+            }
+
+            else if (pressedValue == '#') {
+                display.showBankMenu();
+                currentState = AWAITING_BANK_SELECTION;
+            }
+
+            else{
+                display.printKey(pressedValue, false, true);
+            }
+        }
+
+        // TRACK: Selecting the Bank
+        else if (currentState == AWAITING_BANK_SELECTION)
+        {
+            if (pressedValue == '*')
+            {
+                // Go back to the account number screen if they made a mistake
+                display.showAccountPrompt();
+                currentState = AWAITING_DESTINATION_ACCOUNT;
+            }
+            else if (pressedValue >= '1' && pressedValue <= '4')
+            {
+                String selectedBankCode = "";
+
+                // Assign the correct routing code based on the button!
+                if (pressedValue == '1')
+                    selectedBankCode = "044"; // Access
+                else if (pressedValue == '2')
+                    selectedBankCode = "033"; // UBA
+                else if (pressedValue == '3')
+                    selectedBankCode = "057"; // Zenith
+                else if (pressedValue == '4')
+                    selectedBankCode = "001"; // Test Bank
+
+                // Grab the account number we saved earlier
+                String accountNo = display.getDestinationAccount();
+
+                // Show the loading screen
+                leds.setProcessing();
+                display.showSuccessMessage("Fetching Name...");
+
+                // Fire the API using our dynamic variables!
+                String resolvedName = router.testPaystackName(accountNo, selectedBankCode);
+
+                // Move to the confirmation screen!
+                leds.setTyping();
+                display.showConfirmation(resolvedName);
+                currentState = AWAITING_NAME_CONFIRMATION;
+            }
+        }
+
+        // TRACK: Confirming the extracted Paystack Name
+        else if (currentState == AWAITING_NAME_CONFIRMATION)
+        {
+            if (pressedValue == '*')
+            {
+                // Cancel: "Oops, wrong person!" -> Back to Main Menu
+                leds.setIdle();
+                display.resetInput();
+                currentState = IDLE_MENU;
+            }
+            else if (pressedValue == '#')
+            {
+                // Confirmed! "Yes, that's them." -> Move to Amount Screen
+                leds.setTyping();
+                display.showAmountPrompt();
+                currentState = AWAITING_AMOUNT;
+            }
+            // Notice we don't have a 0-9 check here, because they shouldn't
+            // be typing anything on a confirmation screen!
         }
 
         else if (currentState == AWAITING_ADMIN_PASS)
@@ -112,7 +198,7 @@ void AppController::run()
 
             else
             {
-                display.printKey(pressedValue, true);
+                display.printKey(pressedValue, true, false);
             }
         }
 
@@ -135,7 +221,7 @@ void AppController::run()
             }
             else if (pressedValue >= '0' && pressedValue <= '9')
             {
-                display.printKey(pressedValue, false);
+                display.printKey(pressedValue, false, false);
             }
         }
 
@@ -201,7 +287,7 @@ void AppController::run()
 
                 else
                 {
-                    display.printKey(pressedValue, true);
+                    display.printKey(pressedValue, true, false);
                 }
             }
 
@@ -222,7 +308,7 @@ void AppController::run()
                 {
                     leds.setProcessing();
                     delay(1000);
-                    router.sendTransaction(display.getEnteredAmount().toInt(), "Password", 1);
+                    router.sendTransaction(display.getEnteredAmount().toInt(), "Password", 1, display.getDestinationAccount());
                     display.processTransaction();
 
                     leds.setIdle();
@@ -242,7 +328,7 @@ void AppController::run()
             // If it wasn't the # key, just type the character
             else
             {
-                display.printKey(pressedValue, true);
+                display.printKey(pressedValue, true, false);
             }
         }
 
@@ -303,7 +389,7 @@ void AppController::run()
 
             else if (pressedValue >= '0' && pressedValue <= '9')
             {
-                display.printKey(pressedValue, false);
+                display.printKey(pressedValue, false, false);
             }
 
             else if (pressedValue == '#')
@@ -362,7 +448,7 @@ void AppController::run()
 
             else if (pressedValue >= '0' && pressedValue <= '9')
             {
-                display.printKey(pressedValue, false);
+                display.printKey(pressedValue, false, false);
             }
 
             else if (pressedValue == '#')
@@ -456,13 +542,13 @@ void AppController::run()
     {
         int matchResult = scanner.scanForMatch();
 
-        if (matchResult == 1) // Match Found!
+        if (matchResult == 1) // Match Found
         {
             failedBiometricAttempts = 0; // Reset the counter on success!
             leds.setProcessing();
             delay(600);
 
-            router.sendTransaction(display.getEnteredAmount().toInt(), "Biometric", 1);
+            router.sendTransaction(display.getEnteredAmount().toInt(), "Biometric", 1, display.getDestinationAccount());
             display.processTransaction();
 
             leds.setIdle();

@@ -19,25 +19,46 @@ private:
     String enteredAmount = "", enteredPassword = "";
 
 public:
+    String destinationAccount = "";
+
     // all functions to effectively handle the full FSM
     void init();
     void showMainMenu();
     void showAmountPrompt();
-    void printKey(char key, bool isPasswordMode);
+
+    void printKey(char key, bool isPasswordMode, bool isAccountMode);
+    void showAccountPrompt();
+
+    void showBankMenu();
+
+    void showConfirmation(String targetName);
+
+    String getDestinationAccount() {
+        return destinationAccount;
+    }
+
     void showAdminMenu();
     void showAuthMenu();
+
     void showBiometricPrompt();
+
     void showPasswordPrompt();
     String getEnteredAmount();
     String getEnteredPassword();
+
     void processTransaction();
     void showErrorMessage(String errorMessage);
+
     void showSuccessMessage(String successMessage);
     void showPlaceFinger();
+
     void showRemoveFinger();
+
     void showPlaceAgain();
+
     void showEnrollIDPrompt();
     void showDeleteIDPrompt();
+
     void showDeleteAllIDPrompt();
     void resetInput();
 };

@@ -35,6 +35,58 @@ void DisplayManager::showMainMenu()
     oled.display();
 }
 
+void DisplayManager::showAccountPrompt()
+{
+    oled.clearDisplay();
+    oled.setTextSize(1);
+
+    oled.setCursor(0, 10);
+    oled.print("Enter Account NO: ");
+
+    oled.display();
+
+    inputX = 0, inputY = 35;
+}
+
+void DisplayManager::showBankMenu()
+{
+    oled.clearDisplay();
+    oled.setTextSize(1);
+
+    oled.setCursor(0, 0);
+    oled.print("Select Bank:");
+
+    oled.setCursor(0, 12);
+    oled.print("1. Access");
+
+    oled.setCursor(0, 24);
+    oled.print("2. UBA");
+
+    oled.setCursor(0, 36);
+    oled.print("3. Zenith");
+
+    oled.setCursor(0, 48);
+    oled.print("4. Test Bank");
+
+    oled.display();
+}
+
+void DisplayManager::showConfirmation(String targetName) {
+    oled.clearDisplay();
+    oled.setTextSize(1);
+
+    oled.setCursor(10, 0);
+    oled.print("Send to: ");
+
+    oled.setCursor(0, 20);
+    oled.print(targetName);
+
+    oled.setCursor(0, 50);
+    oled.print("Press # to continue");
+
+    oled.display();
+}
+
 void DisplayManager::showAmountPrompt()
 {
     oled.clearDisplay();
@@ -60,7 +112,7 @@ void DisplayManager::showAmountPrompt()
 }
 
 // adding the default parameter here!
-void DisplayManager::printKey(char key, bool isPasswordMode = false)
+void DisplayManager::printKey(char key, bool isPasswordMode = false, bool isAccountMode = false)
 {
     // 1. String Math (Same as before)
     if (key == '*')
@@ -70,7 +122,10 @@ void DisplayManager::printKey(char key, bool isPasswordMode = false)
 
             enteredPassword.remove(enteredPassword.length() - 1);
 
-        else if (!isPasswordMode && enteredAmount.length() > 0)
+        else if (isAccountMode && destinationAccount.length() > 0)
+            destinationAccount.remove(destinationAccount.length() - 1);
+
+        else if (!isPasswordMode && !isAccountMode && enteredAmount.length() > 0)
 
             enteredAmount.remove(enteredAmount.length() - 1);
     }
@@ -81,8 +136,12 @@ void DisplayManager::printKey(char key, bool isPasswordMode = false)
         if (isPasswordMode && enteredPassword.length() < 16)
 
             enteredPassword += key;
+            
+            else if (isAccountMode && destinationAccount.length() < 10) {
+                destinationAccount += key;
+            }
 
-        else if (!isPasswordMode && enteredAmount.length() < 16)
+        else if (!isPasswordMode && !isAccountMode && enteredAmount.length() < 16)
             enteredAmount += key;
     }
 
@@ -101,14 +160,19 @@ void DisplayManager::printKey(char key, bool isPasswordMode = false)
         }
         oled.print(" "); // The eraser space
     }
+
+    else if (isAccountMode) {
+        oled.print(destinationAccount);
+    }
+
     else
     {
         // Draw the normal amount or ID
         oled.print(enteredAmount);
-        oled.print(" "); // The eraser space
     }
+    oled.print(" "); // The eraser space
 
-    // 4. Push the update to the glass!
+    // 4. Push the update to the glass
     oled.display();
 }
 
@@ -329,6 +393,7 @@ void DisplayManager::resetInput()
 {
     enteredAmount = "";
     enteredPassword = "";
+    destinationAccount = "";
 
     showMainMenu();
 }
