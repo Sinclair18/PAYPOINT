@@ -9,10 +9,12 @@ void AppController::init()
     leds.init();
 
     display.init();
+    display.showSuccessMessage("Connecting to wifi...");
+
+    router.init();
 
     scanner.init();
 
-    router.init();
 
     display.showMainMenu();
 }
@@ -207,11 +209,18 @@ void AppController::run()
         {
             if (pressedValue == '*')
             {
-                // Cancel back to main menu
-                display.resetInput();
-                leds.setIdle();
+                if (display.getEnteredAmount().length() == 0) {
 
-                currentState = IDLE_MENU;
+                    display.showAccountPrompt();
+                    leds.setTyping();
+
+                    currentState = AWAITING_DESTINATION_ACCOUNT;
+                }
+
+                else {
+                    display.printKey(pressedValue, false, false);
+                }
+
             }
             else if (pressedValue == '#')
             {

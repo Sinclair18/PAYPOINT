@@ -43,6 +43,8 @@ void DisplayManager::showAccountPrompt()
     oled.setCursor(0, 10);
     oled.print("Enter Account NO: ");
 
+    destinationAccount = "";
+
     oled.display();
 
     inputX = 0, inputY = 35;
