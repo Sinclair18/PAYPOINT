@@ -15,8 +15,11 @@ cpp files*/
 /* defining the parameters that I'd need to control the 1.3 inch OLED display, I'm particularly using the
 SH110X library for this oled */
 #define OLED_ADDRESS 0X3C
+
 #define OLED_HEIGHT 64
+
 #define OLED_WIDTH 128
+
 #define OLED_RESET -1
 
 
@@ -24,7 +27,9 @@ SH110X library for this oled */
 module is connected to the serial2 tx pin of esp32 dev module (pin 17) and the tx pin of the module connects
 to the serial2 rx pin of the esp32 dev module*/
 #define AS608_RX 17
+
 #define AS608_TX 16
+
 #define ADMIN_PASSWORD "0000"
 
 
@@ -50,7 +55,9 @@ const uint8_t KEYPAD_ROWS = 4;
 const uint8_t KEYPAD_COLS = 4;
 
 const uint8_t rowPins[KEYPAD_ROWS] = {26, 27, 14, 13};
+
 const uint8_t colPins[KEYPAD_COLS] = {25, 33, 32, 23};
+
 const char keys[KEYPAD_ROWS][KEYPAD_COLS] = {{'1', '2', '3', 'A'},
                                              {'4', '5', '6', 'B'},
                                              {'7', '8', '9', 'C'},

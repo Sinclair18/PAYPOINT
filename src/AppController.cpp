@@ -4,6 +4,9 @@ void AppController::init()
 {
     Serial.begin(115200);
 
+    preferences.begin("Paypoint", false);
+    failedBiometricAttempts = preferences.getInt("failedBioAttempts", 0);
+
     pad.init();
 
     leds.init();
@@ -553,7 +556,10 @@ void AppController::run()
 
         if (matchResult == 1) // Match Found
         {
-            failedBiometricAttempts = 0; // Reset the counter on success!
+            failedBiometricAttempts = 0;
+            // NEW: Tell the permanent memory we cleared the strikes!
+            preferences.putInt("failedBioAttempts", 0);
+
             leds.setProcessing();
             delay(600);
 
@@ -567,7 +573,11 @@ void AppController::run()
         }
         else if (matchResult == 2) // Wrong Finger!
         {
-            failedBiometricAttempts++; // Add a strike!
+            // NEW: You have to actually add the strike first!
+            failedBiometricAttempts++;
+
+            // Now save the updated strike count to memory
+            preferences.putInt("failedBioAttempts", failedBiometricAttempts);
 
             if (failedBiometricAttempts >= 3)
             {
@@ -576,7 +586,10 @@ void AppController::run()
                 display.showErrorMessage("Too Many Errors");
                 delay(1500);
 
-                failedBiometricAttempts = 0; // Reset for the next time
+                failedBiometricAttempts = 0;
+                // NEW: Tell the permanent memory we reset back to 0!
+                preferences.putInt("failedBioAttempts", 0);
+
                 leds.setIdle();
                 display.resetInput();
                 currentState = IDLE_MENU;
@@ -593,6 +606,4 @@ void AppController::run()
                 lastInteractionTime = millis();
             }
         }
-        // If it's 0 (no finger), it skips all this and waits
     }
-}

@@ -8,9 +8,11 @@
 #include "../include/LedManager.h"
 #include "../include/BiometricAuth.h"
 #include "../include/NetworkBridge.h"
+#include <Preferences.h>
 
 class AppController {
     private:
+        Preferences preferences;
         BiometricAuth scanner;
         InputPad pad;
         LedManager leds;
