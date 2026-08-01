@@ -20,16 +20,16 @@ void DisplayManager::showMainMenu()
     oled.setCursor(1, 0);
     oled.print("1. Send Money");
 
-    oled.setCursor(0, 12);
+    oled.setCursor(0, 13);
     oled.print("2. Check Balance");
 
-    oled.setCursor(0, 24);
+    oled.setCursor(0, 26);
     oled.print("3. View History");
 
-    oled.setCursor(0, 36);
+    oled.setCursor(0, 39);
     oled.print("4. Admin Panel");
     
-    oled.setCursor(0, 48);
+    oled.setCursor(0, 52);
     oled.print("5. Manage Users");
 
     oled.display();
@@ -105,7 +105,7 @@ void DisplayManager::showAmountPrompt()
     oled.print("Amount: ");
 
     oled.setCursor(54, 45);
-    oled.print('$');
+    oled.print('N');
     oled.display();
 
     inputX = 60; // Start typing after "Amt: $"
@@ -184,14 +184,20 @@ void DisplayManager::showAdminMenu()
 
     oled.setTextSize(1);
 
-    oled.setCursor(10, 11);
+    oled.setCursor(10, 0);
     oled.print("1. Enroll New ID");
 
-    oled.setCursor(10, 31);
+    oled.setCursor(10, 13);
     oled.print("2. Delete An ID");
 
-    oled.setCursor(10, 51);
+    oled.setCursor(10, 26);
     oled.print("3. Delete ALL ID");
+    
+    oled.setCursor(10, 39);
+    oled.print("4. Set Payment Pin");
+
+    oled.setCursor(10, 52);
+    oled.print("5. Set Admin Pin");
 
     oled.display();
 }
@@ -232,10 +238,10 @@ void DisplayManager::showPasswordPrompt()
 
     oled.setTextSize(1);
 
-    oled.setCursor(10, 15);
-    oled.print("Enter Password: ");
+    oled.setCursor(30, 15);
+    oled.print("Enter Pin: ");
 
-    inputX = 10, inputY = 45;
+    inputX = 45, inputY = 45;
 
     oled.display();
 }
@@ -263,7 +269,7 @@ void DisplayManager::processTransaction()
     oled.clearDisplay();
 
     oled.setCursor(10, 45);
-    oled.print("Sent: $");
+    oled.print("Sent: N");
 
     inputX = 53, inputY = 45;
     oled.print(enteredAmount); // Pulls the amount directly from memory
@@ -298,6 +304,8 @@ void DisplayManager::showSuccessMessage(String successMessage)
     oled.setCursor(5, 20);
 
     oled.print(successMessage);
+
+    enteredPassword = "";
 
     oled.display();
 }
@@ -350,6 +358,18 @@ void DisplayManager::showEnrollIDPrompt()
 
     inputX = 34, inputY = 45;
     oled.display();
+}
+
+void DisplayManager::showSetPinPrompt(String pinName){
+    enteredPassword = "";
+    oled.clearDisplay();
+    oled.setTextSize(1);
+
+    oled.setCursor(0, 10);
+    oled.print("New " + pinName + ": ");
+    oled.display();
+
+    oled.setCursor(20, 35);
 }
 
 void DisplayManager::showDeleteIDPrompt()

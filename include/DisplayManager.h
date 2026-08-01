@@ -59,6 +59,8 @@ public:
     void showEnrollIDPrompt();
     void showDeleteIDPrompt();
 
+    void showSetPinPrompt(String pinName);
+
     void showDeleteAllIDPrompt();
     void resetInput();
 };

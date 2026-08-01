@@ -7,6 +7,10 @@ void AppController::init()
     preferences.begin("Paypoint", false);
     failedBiometricAttempts = preferences.getInt("failedBioAttempts", 0);
 
+    // Fetch saved passwords, or use these default ones if it's a brand new device
+    adminPassword = preferences.getString("adminPass", "0000");
+    masterPassword = preferences.getString("masterPass", "200518");
+
     pad.init();
 
     leds.init();
@@ -17,7 +21,6 @@ void AppController::init()
     router.init();
 
     scanner.init();
-
 
     display.showMainMenu();
 }
@@ -72,29 +75,34 @@ void AppController::run()
             }
         }
 
-        else if (currentState == AWAITING_DESTINATION_ACCOUNT) {
+        else if (currentState == AWAITING_DESTINATION_ACCOUNT)
+        {
 
-            if (pressedValue == '*') {
-                if (display.getDestinationAccount().length() == 0) {
+            if (pressedValue == '*')
+            {
+                if (display.getDestinationAccount().length() == 0)
+                {
 
                     leds.setIdle();
                     display.showMainMenu();
-    
+
                     currentState = IDLE_MENU;
                 }
 
-                else {
+                else
+                {
                     display.printKey(pressedValue, false, true);
                 }
-                
             }
 
-            else if (pressedValue == '#') {
+            else if (pressedValue == '#')
+            {
                 display.showBankMenu();
                 currentState = AWAITING_BANK_SELECTION;
             }
 
-            else{
+            else
+            {
                 display.printKey(pressedValue, false, true);
             }
         }
@@ -173,7 +181,7 @@ void AppController::run()
 
             else if (pressedValue == '#')
             {
-                if (display.getEnteredPassword() == ADMIN_PASSWORD)
+                if (display.getEnteredPassword() == adminPassword)
                 {
 
                     leds.setProcessing();
@@ -212,7 +220,8 @@ void AppController::run()
         {
             if (pressedValue == '*')
             {
-                if (display.getEnteredAmount().length() == 0) {
+                if (display.getEnteredAmount().length() == 0)
+                {
 
                     display.showAccountPrompt();
                     leds.setTyping();
@@ -220,10 +229,10 @@ void AppController::run()
                     currentState = AWAITING_DESTINATION_ACCOUNT;
                 }
 
-                else {
+                else
+                {
                     display.printKey(pressedValue, false, false);
                 }
-
             }
             else if (pressedValue == '#')
             {
@@ -316,7 +325,7 @@ void AppController::run()
                     currentState = AWAITING_PASSWORD;
                 }
                 // 2. If it is long enough, do the actual master password check
-                else if (display.getEnteredPassword() == MASTER_PASSWORD)
+                else if (display.getEnteredPassword() == masterPassword)
                 {
                     leds.setProcessing();
                     delay(1000);
@@ -389,6 +398,20 @@ void AppController::run()
                 display.showDeleteAllIDPrompt();
                 currentState = AWAITING_DELETE_ALL_ID;
             }
+
+            else if (pressedValue == '4')
+            {
+                display.resetInput(); // Wipe any old input first
+                display.showSetPinPrompt("Payment PIN");
+                currentState = AWAITING_SET_PAYMENT_PIN;
+            }
+
+            else if (pressedValue == '5')
+            {
+                display.resetInput();
+                display.showSetPinPrompt("Admin PIN");
+                currentState = AWAITING_SET_ADMIN_PIN;
+            }
         }
 
         else if (currentState == AWAITING_ENROLL_ID)
@@ -446,6 +469,55 @@ void AppController::run()
                         currentState = ADMIN_MODE;
                     }
                 }
+            }
+        }
+
+        else if (currentState == AWAITING_SET_ADMIN_PIN)
+        {
+            if (pressedValue == '*') {
+                display.showAdminMenu();
+                currentState = ADMIN_MODE;
+            }
+
+            else if (pressedValue >= '0' && pressedValue <= '9') {
+                display.printKey(pressedValue, true, false);
+
+            }
+
+            else if (pressedValue == '#') {
+                adminPassword = display.getEnteredPassword();
+                preferences.putString("adminPass", adminPassword);
+
+                display.showSuccessMessage("Admin Pin Saved");
+                delay(1500);
+
+                display.showAdminMenu();
+                currentState = ADMIN_MODE;
+            }
+        }
+
+
+        else if (currentState == AWAITING_SET_PAYMENT_PIN)
+        {
+            if (pressedValue == '*')
+            {
+                display.showAdminMenu(); // Cancel and go back
+                currentState = ADMIN_MODE;
+            }
+            else if (pressedValue >= '0' && pressedValue <= '9')
+            {
+                display.printKey(pressedValue, true, false); // 'true' hides the PIN as asterisks!
+            }
+            else if (pressedValue == '#')
+            {
+                masterPassword = display.getEnteredPassword();       // 1. Update the live variable
+                preferences.putString("masterPass", masterPassword); // 2. Save it to permanent memory!
+
+                display.showSuccessMessage("Payment Pin Saved!");
+                delay(1500);
+
+                display.showAdminMenu();
+                currentState = ADMIN_MODE;
             }
         }
 
@@ -579,7 +651,7 @@ void AppController::run()
             // Now save the updated strike count to memory
             preferences.putInt("failedBioAttempts", failedBiometricAttempts);
 
-            if (failedBiometricAttempts >= 3)
+            if (failedBiometricAttempts >= 5)
             {
                 // Strike 3: You're out!
                 leds.setError();
@@ -607,3 +679,4 @@ void AppController::run()
             }
         }
     }
+}

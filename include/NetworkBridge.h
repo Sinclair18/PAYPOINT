@@ -19,6 +19,7 @@ class NetworkBridge {
 
         void sendTransaction(int amount, String authMethod, int userID, String destinationAccount);
         String testPaystackName(String accNo, String bankCode);
+        String checkBalance();
 };
 
 #endif

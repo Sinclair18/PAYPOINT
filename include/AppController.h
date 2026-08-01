@@ -22,6 +22,8 @@ class AppController {
         SystemStates currentState = IDLE_MENU;
         unsigned long lastInteractionTime = 0;
         int failedBiometricAttempts = 0;
+        String adminPassword;
+        String masterPassword;
 
     public:
         void init();

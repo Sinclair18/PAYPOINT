@@ -131,3 +131,16 @@ String NetworkBridge::testPaystackName(String accNo, String bankCode)
 
     return "NO_WIFI";
 }
+
+String NetworkBridge::checkBalance() {
+    HTTPClient http;
+    http.begin(client, "https://api.paystack.co/Balance");
+    http.addHeader("Authorization", "Bearer " + String(PAYSTACK_API_KEY));
+
+    int httpResponseCode = http.GET();
+    http.end();
+
+    return String(httpResponseCode); 
+
+    return "0.00";
+}
