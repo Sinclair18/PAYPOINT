@@ -122,6 +122,7 @@ String NetworkBridge::testPaystackName(String accNo, String bankCode)
             // NEW: Print the exact error code and Paystack's message!
             Serial.print("Failed! HTTP Code: ");
             Serial.println(httpResponseCode);
+
             Serial.println(http.getString());
 
             http.end();
@@ -134,13 +135,21 @@ String NetworkBridge::testPaystackName(String accNo, String bankCode)
 
 String NetworkBridge::checkBalance() {
     HTTPClient http;
-    http.begin(client, "https://api.paystack.co/Balance");
-    http.addHeader("Authorization", "Bearer " + String(PAYSTACK_API_KEY));
+
+    WiFiClientSecure secureClient;
+    secureClient.setInsecure();
+
+    http.begin(secureClient, "https://api.paystack.co/balance");
+
+    http.addHeader("Authorization", "Bearer " + String(paystackKey));
 
     int httpResponseCode = http.GET();
     http.end();
 
-    return String(httpResponseCode); 
+    String payload = http.getString();
+    StaticJsonDocument<512> doc;
+    deserializeJson(doc, payload);
 
-    return "0.00";
+    // Paystack returns money in Kobo, so we divide by 100 to get Naira!
+    return String(doc["data"][0]["balance"].as<int>() / 100);
 }
